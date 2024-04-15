@@ -1,25 +1,24 @@
 // hashmaps3.rs
-//
-// A list of scores (one per line) of a soccer match is given. Each line is of
-// the form : "<team_1_name>,<team_2_name>,<team_1_goals>,<team_2_goals>"
-// Example: England,France,4,2 (England scored 4 goals, France 2).
-//
-// You have to build a scores table containing the name of the team, goals the
-// team scored, and goals the team conceded. One approach to build the scores
-// table is to use a Hashmap. The solution is partially written to use a
-// Hashmap, complete it to pass the test.
-//
-// Make me pass the tests!
-//
-// Execute `rustlings hint hashmaps3` or use the `hint` watch subcommand for a
-// hint.
 
-// I AM NOT DONE
+// A list of scores (one per line) of a soccer match is given. Each line
+// is of the form :
+// <team_1_name>,<team_2_name>,<team_1_goals>,<team_2_goals>
+// Example: England,France,4,2 (England scored 4 goals, France 2).
+
+// You have to build a scores table containing the name of the team, goals
+// the team scored, and goals the team conceded. One approach to build
+// the scores table is to use a Hashmap. The solution is partially
+// written to use a Hashmap, complete it to pass the test.
+
+// Make me pass the tests!
+
+// Execute `rustlings hint hashmaps3` or use the `hint` watch subcommand for a hint.
 
 use std::collections::HashMap;
 
-// A structure to store the goal details of a team.
+// A structure to store team name and its goal details.
 struct Team {
+    name: String,
     goals_scored: u8,
     goals_conceded: u8,
 }
@@ -34,6 +33,38 @@ fn build_scores_table(results: String) -> HashMap<String, Team> {
         let team_1_score: u8 = v[2].parse().unwrap();
         let team_2_name = v[1].to_string();
         let team_2_score: u8 = v[3].parse().unwrap();
+
+        let team_1_value = scores.get_mut(&team_1_name);
+        match team_1_value {
+            Some(value) => {
+                value.goals_scored += team_1_score;
+                value.goals_conceded += team_2_score;
+            },
+            None => {
+                let value = Team {
+                    name: team_1_name.clone(),
+                    goals_scored: team_1_score,
+                    goals_conceded: team_2_score
+                };
+                scores.insert(team_1_name.clone(), value);
+            }
+        }
+
+        let team_2_value = scores.get_mut(&team_2_name);
+        match team_2_value {
+            Some(value) => {
+                value.goals_scored += team_2_score;
+                value.goals_conceded += team_1_score;
+            },
+            None => {
+                let value = Team {
+                    name: team_2_name.clone(),
+                    goals_scored: team_2_score,
+                    goals_conceded: team_1_score
+                };
+                scores.insert(team_2_name.clone(), value);
+            }
+        }
         // TODO: Populate the scores table with details extracted from the
         // current line. Keep in mind that goals scored by team_1
         // will be the number of goals conceded from team_2, and similarly
