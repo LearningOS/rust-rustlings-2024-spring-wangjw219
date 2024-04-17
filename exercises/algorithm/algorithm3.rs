@@ -5,9 +5,21 @@
 */
 // I AM NOT DONE
 
-fn sort<T>(array: &mut [T]){
-	//TODO
+fn sort<T: PartialOrd + Default>(array: &mut [T]) {
+	let len = array.len();
+
+    for i in 0..len {
+        for j in 0..len - 1 - i {
+            if array[j] > array[j + 1] {
+                let mut a = take(&mut array[j]);
+                let mut b = take(&mut array[j + 1]);
+                array[j] = b;
+                array[j + 1] = a;
+            }
+        }
+    }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

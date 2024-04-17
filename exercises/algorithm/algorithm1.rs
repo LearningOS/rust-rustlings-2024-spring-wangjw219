@@ -24,13 +24,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T: PartialOrd + Clone> Default for LinkedList<T> {
+impl<T: PartialOrd> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: PartialOrd + Clone> LinkedList<T> {
+impl<T: PartialOrd> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -64,8 +64,9 @@ impl<T: PartialOrd + Clone> LinkedList<T> {
             },
         }
     }
-    pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self {
-        if list_a.length == 0 {
+	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+	{
+		if list_a.length == 0 {
             return list_b;
         }
 
@@ -79,65 +80,61 @@ impl<T: PartialOrd + Clone> LinkedList<T> {
             end: None,
         };
 
-        let mut index_a = 0i32;
-        let mut index_b = 0i32;
-        let length_a = list_a.length as i32;
-        let length_b = list_b.length as i32;
+        let mut position_a = list_a.start;
+        let mut position_b = list_b.start;
 
-        // let mut position_a = list_a.start;
-        // let mut position_b = list_b.start;
+        loop {
+            if let Some(pos_a_ptr) = position_a {
+                if let Some(pos_b_ptr) = position_b {
+                    let mut position;
+                    unsafe {
+                        if (*pos_a_ptr.as_ptr()).val < (*pos_b_ptr.as_ptr()).val {
+                            position = position_a;
+                            position_a = (*pos_a_ptr.as_ptr()).next;
+                        } else {
+                            position = position_b;
+                            position_b = (*pos_b_ptr.as_ptr()).next;
+                        }
 
-        // loop {
-        //     if let Some(pos_a_ptr) = position_a {
-        //         if let Some(pos_b_ptr) = position_b {
-        //             unsafe {
-        //                 if (*pos_a_ptr.as_ptr()).val < (*pos_b_ptr.as_ptr()).val {
-        //                     result
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-        while index_a < length_a && index_b < length_b {
-            let node_a = Self::get(&mut list_a, index_a);
-            let node_b = Self::get(&mut list_b, index_b);
-
-            if let Some(value_a) = node_a {
-                if let Some(value_b) = node_b {
-                    if value_a < value_b {
-                        result.add(value_a.clone());
-                        index_a += 1;
-                    } else {
-                        result.add(value_b.clone());
-                        index_b += 1;
+                        match result.end {
+                            None => result.start = position,
+                            Some(end_ptr) => (*end_ptr.as_ptr()).next = position,
+                        }
+                        result.end = position;
+                        result.length += 1;
                     }
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        while let Some(ptr_a) = position_a {
+            if let Some(end_ptr) = result.end {
+                unsafe {
+                    (*end_ptr.as_ptr()).next = position_a;
+                    result.end = position_a;
+                    result.length += 1;
+                    position_a = (*ptr_a.as_ptr()).next;
                 }
             }
         }
 
-        if index_a == length_a {
-            while index_b < length_b {
-                let node = Self::get(&mut list_b, index_b);
-
-                if let Some(value) = node {
-                    result.add(value.clone());
-                    index_b += 1;
-                }
-            }
-        } else {
-            while index_a < length_a {
-                let node = Self::get(&mut list_a, index_a);
-
-                if let Some(value) = node {
-                    result.add(value.clone());
-                    index_a += 1;
+        while let Some(ptr_b) = position_b {
+            if let Some(end_ptr) = result.end {
+                unsafe {
+                    (*end_ptr.as_ptr()).next = position_b;
+                    result.end = position_b;
+                    result.length += 1;
+                    position_b = (*ptr_b.as_ptr()).next;
                 }
             }
         }
 
         result
-    }
+	}
 }
 
 impl<T> Display for LinkedList<T>
