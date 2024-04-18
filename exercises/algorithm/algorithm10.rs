@@ -29,7 +29,18 @@ impl Graph for UndirectedGraph {
         &self.adjacency_table
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        self.add_node(edge.0);
+        self.add_node(edge.1);
+
+        let table = self.adjacency_table_mutable();
+
+        if let Some(node0_vec) = table.get_mut(edge.0) {
+            node0_vec.push((edge.1.to_string(), edge.2));
+        }
+
+        if let Some(node1_vec) = table.get_mut(edge.1) {
+            node1_vec.push((edge.0.to_string(), edge.2));
+        }
     }
 }
 pub trait Graph {
@@ -37,11 +48,26 @@ pub trait Graph {
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
-        //TODO
-		true
+        if self.contains(node) {
+            true
+        } else {
+            self.adjacency_table_mutable().insert(node.to_string(), vec![]);
+            true
+        }
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        self.add_node(edge.0);
+        self.add_node(edge.1);
+
+        let table = self.adjacency_table_mutable();
+
+        if let Some(node0_vec) = table.get_mut(edge.0) {
+            node0_vec.push((edge.1.to_string(), edge.2));
+        }
+
+        if let Some(node1_vec) = table.get_mut(edge.1) {
+            node1_vec.push((edge.0.to_string(), edge.2));
+        }
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
@@ -59,6 +85,16 @@ pub trait Graph {
         edges
     }
 }
+
+fn main() {
+    let mut graph = UndirectedGraph::new();
+    graph.add_edge(("a", "b", 5));
+    graph.add_edge(("b", "c", 10));
+    graph.add_edge(("c", "a", 7));
+
+    println!("{:?}", graph.edges());
+}
+
 #[cfg(test)]
 mod test_undirected_graph {
     use super::Graph;

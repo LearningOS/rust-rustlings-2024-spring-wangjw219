@@ -1,6 +1,6 @@
 /*
-	heap
-	This question requires you to implement a binary heap function
+    heap
+    This question requires you to implement a binary heap function
 */
 // I AM NOT DONE
 
@@ -11,6 +11,7 @@ pub struct Heap<T>
 where
     T: Default,
 {
+    current: usize,
     count: usize,
     items: Vec<T>,
     comparator: fn(&T, &T) -> bool,
@@ -22,6 +23,7 @@ where
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
+            current: 1,
             count: 0,
             items: vec![T::default()],
             comparator,
@@ -37,7 +39,23 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        self.items.push(value);
+
+        let mut index = self.count;
+        let mut p_index = self.parent_idx(index);
+
+        while p_index > 0 && !(self.comparator)(&self.items[p_index], &self.items[index]) {
+            let index_value = std::mem::take(&mut self.items[index]);
+            let p_index_value = std::mem::take(&mut self.items[p_index]);
+
+            self.items[index] = p_index_value;
+            self.items[p_index] = index_value;
+
+            index = p_index;
+            self.current = index;
+            p_index = self.parent_idx(index);
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +75,18 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+
+        if (self.comparator)(&self.items[idx], &self.items[left]) {
+            idx
+        } else {
+            if (self.comparator)(&self.items[left], &self.items[right]) {
+                right
+            } else {
+                left
+            }
+        }
     }
 }
 
@@ -79,13 +107,18 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Copy,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            None
+        } else {
+            let item = self.items[self.current];
+            self.current += 1;
+            Some(item)
+        }
     }
 }
 
@@ -111,6 +144,20 @@ impl MaxHeap {
     {
         Heap::new(|a, b| a > b)
     }
+}
+
+fn main() {
+    let mut heap = MaxHeap::new();
+    heap.add(4);
+    println!("{:?}", heap.items);
+    heap.add(2);
+    println!("{:?}", heap.items);
+    heap.add(9);
+    println!("{:?}", heap.items);
+    heap.add(11);
+    println!("{:?}", heap.items);
+    heap.add(1);
+    println!("{:?}", heap.items);
 }
 
 #[cfg(test)]
